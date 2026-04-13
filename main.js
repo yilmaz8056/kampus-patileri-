@@ -31,10 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
 });
 
+let currentScore = 0;
+
 function initApp() {
   const savedTheme = localStorage.getItem('kampus-theme');
   if (savedTheme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  
+  const savedScore = localStorage.getItem('kampus_score');
+  if (savedScore) {
+    currentScore = parseInt(savedScore);
+    document.getElementById('user-score').innerHTML = `<i class="fa-solid fa-gem"></i> ${currentScore} Puan`;
   }
 
   const storedData = localStorage.getItem('kampus_hayvanlari_v2');
@@ -45,6 +53,15 @@ function initApp() {
     saveData();
   }
   renderAnimals();
+}
+
+function updateScore(points) {
+  currentScore += points;
+  localStorage.setItem('kampus_score', currentScore);
+  const scoreEl = document.getElementById('user-score');
+  scoreEl.innerHTML = `<i class="fa-solid fa-gem"></i> ${currentScore} Puan`;
+  scoreEl.style.transform = 'scale(1.2)';
+  setTimeout(() => scoreEl.style.transform = 'scale(1)', 300);
 }
 
 function timeAgo(date) {
@@ -97,21 +114,24 @@ function renderAnimals() {
 
   filteredAnimals.forEach(animal => {
     const card = document.createElement('div');
-    card.className = 'cat-card'; 
+    card.className = animal.isSOS ? 'cat-card sos-card' : 'cat-card'; 
     
-    // Sahiplendirme Badges'i (Artık absolute değil, kapsayıcıya uyacak)
+    // Sahiplendirme Badges'i
     const adoptBadge = animal.isAdoptable 
         ? `<div style="background:#10b981; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-house-chimney-heart"></i> Yuva Arıyor</div>` 
         : '';
         
-    // Kısırlaştırılmadı Badges'i (Absolute değil)
+    // Kısırlaştırılmadı Badges'i
     const isUnneutered = animal.neutered && (animal.neutered === 'Kısırlaştırılmadı' || animal.neutered.toLowerCase().includes('kısırlaştırılmadı'));
     const neuteredBadge = isUnneutered
         ? `<div style="background:#ef4444; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-triangle-exclamation"></i> Kısır Değil</div>` 
         : '';
+        
+    const sosBadge = animal.isSOS ? `<div class="sos-badge">🚨 ACİL DURUM</div>` : '';
 
     card.innerHTML = `
       <div class="cat-img-wrapper" style="position:relative;">
+        ${sosBadge}
         <div style="position:absolute; top:8px; right:8px; display:flex; flex-direction:column; gap:0.4rem; z-index:10; align-items:flex-end;">
           ${adoptBadge}
           ${neuteredBadge}
@@ -198,6 +218,7 @@ function setupEventListeners() {
        if (idx !== -1) {
           animals[idx].lastFed = Date.now();
           saveData();
+          updateScore(10); // Puan artır
           openDetailModal(animals[idx]); // Ekranı canlı tazele!
        }
      }
@@ -225,6 +246,9 @@ function setupEventListeners() {
     document.getElementById('delete-animal-btn').style.display = 'none'; // Ekleme yaparken gizle
     addForm.reset();
     
+    document.getElementById('a-sos').checked = false;
+    document.querySelectorAll('input[name="trait"]').forEach(cb => cb.checked = false);
+
     adoptCheckbox.checked = false;
     contactContainer.style.display = 'none';
     
@@ -259,6 +283,11 @@ function setupEventListeners() {
     adoptCheckbox.checked = currentViewedAnimal.isAdoptable || false;
     document.getElementById('a-contact').value = currentViewedAnimal.contact || '';
     contactContainer.style.display = currentViewedAnimal.isAdoptable ? 'block' : 'none';
+
+    document.getElementById('a-sos').checked = currentViewedAnimal.isSOS || false;
+    document.querySelectorAll('input[name="trait"]').forEach(cb => {
+      cb.checked = currentViewedAnimal.traits && currentViewedAnimal.traits.includes(cb.value);
+    });
 
     closeModal(detailModal);
     openModal(addModal);
@@ -304,6 +333,8 @@ function setupEventListeners() {
         animals[idx].neutered = document.getElementById('a-neutered').value;
         animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
         animals[idx].contact = document.getElementById('a-contact').value;
+        animals[idx].isSOS = document.getElementById('a-sos').checked;
+        animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
         saveData();
       }
 
@@ -354,6 +385,8 @@ function setupEventListeners() {
                 animals[idx].neutered = document.getElementById('a-neutered').value;
                 animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
                 animals[idx].contact = document.getElementById('a-contact').value;
+                animals[idx].isSOS = document.getElementById('a-sos').checked;
+                animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
               }
               const saved = saveData(); 
               if (saved) {
@@ -372,7 +405,9 @@ function setupEventListeners() {
                 vaccine: document.getElementById('a-vaccine').value,
                 neutered: document.getElementById('a-neutered').value,
                 isAdoptable: document.getElementById('a-adopt').checked,
-                contact: document.getElementById('a-contact').value
+                contact: document.getElementById('a-contact').value,
+                isSOS: document.getElementById('a-sos').checked,
+                traits: Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value)
               };
               animals.push(newAnimal);
               const saved = saveData(); 
@@ -410,6 +445,8 @@ function setupEventListeners() {
                   animals[idx].age = document.getElementById('a-age').value;
                   animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
                   animals[idx].contact = document.getElementById('a-contact').value;
+                  animals[idx].isSOS = document.getElementById('a-sos').checked;
+                  animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
                   saveData();
                }
             } else {
@@ -420,7 +457,9 @@ function setupEventListeners() {
                   health: document.getElementById('a-health').value, vaccine: document.getElementById('a-vaccine').value,
                   neutered: document.getElementById('a-neutered').value,
                   isAdoptable: document.getElementById('a-adopt').checked,
-                  contact: document.getElementById('a-contact').value
+                  contact: document.getElementById('a-contact').value,
+                  isSOS: document.getElementById('a-sos').checked,
+                  traits: Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value)
                });
                saveData();
             }
@@ -467,6 +506,15 @@ function openDetailModal(animal) {
   const detailModal = document.getElementById('animal-modal');
   document.getElementById('m-img').src = animal.image;
   document.getElementById('m-name').textContent = animal.name;
+  
+  // Karakter Kapsüllerini Doldurma
+  const traitsContainer = document.getElementById('m-traits');
+  traitsContainer.innerHTML = '';
+  if (animal.traits && animal.traits.length > 0) {
+    animal.traits.forEach(t => {
+      traitsContainer.innerHTML += `<div class="trait-capsule">${t}</div>`;
+    });
+  }
   
   // Mama Takibi Yazısı
   const lastFedEl = document.getElementById('m-last-fed');
@@ -516,6 +564,26 @@ function openDetailModal(animal) {
     badge.style.display = 'none';
     contactCard.style.display = 'none';
   }
+  
+  // QR Kodu İşlemleri (API Bağlantısı ve Buton Reset)
+  const qrBtn = document.getElementById('generate-qr-btn');
+  const qrImg = document.getElementById('m-qr-img');
+  const qrHelp = document.getElementById('m-qr-help');
+  
+  qrImg.style.display = 'none'; // Eski QR'ı gizle
+  qrHelp.style.display = 'none';
+  
+  // EventListener'ı sıfırlamak için klon yapısı (Birden fazla basmayı engeller)
+  const newQrBtn = qrBtn.cloneNode(true);
+  qrBtn.parentNode.replaceChild(newQrBtn, qrBtn);
+  
+  newQrBtn.addEventListener('click', () => {
+    // API'ye gönderilecek kimlik metni
+    const qrData = encodeURIComponent(`Kampüs Patileri: ${animal.name} (${animal.location})`);
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=111827&bgcolor=ffffff&qzone=1&margin=0&data=${qrData}`;
+    qrImg.style.display = 'block';
+    qrHelp.style.display = 'block';
+  });
 
   openModal(detailModal);
 }

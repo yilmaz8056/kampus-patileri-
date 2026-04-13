@@ -384,3 +384,40 @@ body {
 .submit-btn:active {
   transform: scale(0.98);
 }
+
+/* SOS ANIMATION & TRAINTS */
+@keyframes pulseSOS {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.sos-card {
+  border: 2px solid #ef4444 !important;
+  animation: pulseSOS 1.5s infinite;
+}
+
+.sos-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  z-index: 10;
+  animation: pulseSOS 1.5s infinite;
+}
+
+.trait-capsule {
+  display: inline-block;
+  background: var(--active-color);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
