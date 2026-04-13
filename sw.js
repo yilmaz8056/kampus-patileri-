@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kampus-kedileri-v1';
+const CACHE_NAME = 'kampus-kedileri-v2';
 const urlsToCache = [
   './index.html',
   './style.css',

@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+  const savedTheme = localStorage.getItem('kampus-theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
   const storedData = localStorage.getItem('kampus_hayvanlari_v2');
   if (storedData) {
     animals = JSON.parse(storedData);
@@ -40,6 +45,21 @@ function initApp() {
     saveData();
   }
   renderAnimals();
+}
+
+function timeAgo(date) {
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  let interval = Math.floor(seconds / 31536000);
+  if (interval >= 1) return interval + " yıl önce";
+  interval = Math.floor(seconds / 2592000);
+  if (interval >= 1) return interval + " ay önce";
+  interval = Math.floor(seconds / 86400);
+  if (interval >= 1) return interval + " gün önce";
+  interval = Math.floor(seconds / 3600);
+  if (interval >= 1) return interval + " saat önce";
+  interval = Math.floor(seconds / 60);
+  if (interval >= 1) return interval + " dakika önce";
+  return "Şimdi";
 }
 
 function saveData() {
@@ -56,9 +76,19 @@ function renderAnimals() {
   const grid = document.getElementById('animal-grid');
   grid.innerHTML = ''; 
   
-  const filteredAnimals = currentType === 'adopt' 
+  const searchInput = document.getElementById('search-input');
+  const searchText = searchInput.value.toLowerCase();
+
+  let filteredAnimals = currentType === 'adopt' 
     ? animals.filter(a => a.isAdoptable === true)
     : animals.filter(a => a.type === currentType);
+    
+  if (searchText) {
+    filteredAnimals = filteredAnimals.filter(a => 
+      a.name.toLowerCase().includes(searchText) || 
+      a.location.toLowerCase().includes(searchText)
+    );
+  }
   
   if (filteredAnimals.length === 0) {
     grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 2rem;">Henüz kayıtlı canlı bulunamadı.</p>`;
@@ -145,12 +175,54 @@ function setupEventListeners() {
     }
   });
 
+  // Arama Kutusu ve Tema Dinleyicileri
+  document.getElementById('search-input').addEventListener('input', () => renderAnimals());
+
+  const themeToggle = document.getElementById('theme-toggle');
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = root.getAttribute('data-theme');
+    if (currentTheme === 'dark') {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('kampus-theme', 'light');
+    } else {
+      root.setAttribute('data-theme', 'dark');
+      localStorage.setItem('kampus-theme', 'dark');
+    }
+  });
+
+  // Mama Ver Butonu (Beslenme Takibi)
+  const feedBtn = document.getElementById('feed-animal-btn');
+  feedBtn.addEventListener('click', () => {
+     if (currentViewedAnimal) {
+       const idx = animals.findIndex(a => a.id === currentViewedAnimal.id);
+       if (idx !== -1) {
+          animals[idx].lastFed = Date.now();
+          saveData();
+          openDetailModal(animals[idx]); // Ekranı canlı tazele!
+       }
+     }
+  });
+
+  // Hayvan Silme Butonu
+  const deleteBtn = document.getElementById('delete-animal-btn');
+  deleteBtn.addEventListener('click', () => {
+     if (editingAnimalId) {
+        if (confirm("Bu hayvanın kaydını kalıcı olarak silmek istediğinize emin misiniz? (Örn: Sahiplendirildiyse veya aramızdan ayrıldıysa)")) {
+           animals = animals.filter(a => a.id !== editingAnimalId);
+           saveData();
+           renderAnimals();
+           closeModal(addModal);
+        }
+     }
+  });
+
   // YENİ EKLE BUTONU
   fabAdd.addEventListener('click', () => {
     editingAnimalId = null;
     document.querySelector('#add-modal h2').innerText = 'Yeni Hayvan Ekle';
     document.getElementById('a-image-help').innerText = 'Bilgisayardan/Telefondan resim seçin. (Zorunlu)';
     document.getElementById('a-image-file').required = true;
+    document.getElementById('delete-animal-btn').style.display = 'none'; // Ekleme yaparken gizle
     addForm.reset();
     
     adoptCheckbox.checked = false;
@@ -167,6 +239,7 @@ function setupEventListeners() {
     document.querySelector('#add-modal h2').innerText = 'Hayvanı Güncelle';
     document.getElementById('a-image-help').innerText = 'Fotoğraf seçmezseniz mevcut fotoğraf ile kalır.';
     document.getElementById('a-image-file').required = false;
+    document.getElementById('delete-animal-btn').style.display = 'block'; // Güncellerken Silmeyi Göster
 
     // Alanları eski bilgilerle doldur
     document.getElementById('a-type').value = currentViewedAnimal.type;
@@ -395,6 +468,16 @@ function openDetailModal(animal) {
   document.getElementById('m-img').src = animal.image;
   document.getElementById('m-name').textContent = animal.name;
   
+  // Mama Takibi Yazısı
+  const lastFedEl = document.getElementById('m-last-fed');
+  if (animal.lastFed) {
+    lastFedEl.textContent = "Son beslenme: " + timeAgo(animal.lastFed);
+    lastFedEl.style.color = "var(--primary-color)";
+  } else {
+    lastFedEl.textContent = "Son beslenme: Henüz veri yok";
+    lastFedEl.style.color = "var(--text-light)";
+  }
+
   document.getElementById('m-age').textContent = animal.age || 'Bilinmiyor';
   document.getElementById('m-location').textContent = animal.location;
   document.getElementById('m-health').textContent = animal.health;

@@ -19,6 +19,14 @@
   }
 }
 
+[data-theme='dark'] {
+  --bg-color: #111827;
+  --card-bg: rgba(31, 41, 55, 0.85);
+  --text-dark: #f9fafb;
+  --text-light: #9ca3af;
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
 * {
   margin: 0;
   padding: 0;
