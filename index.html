@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Apple/iOS ve PWA Kurulum Etiketleri -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Patiler">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1054/1054179.png">
+  <meta name="theme-color" content="#ff8c42">
+
+  <title>Kampüs Patileri</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo">
+      <i class="fa-solid fa-paw"></i>
+      <h1>Kampüs Patileri</h1>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-type="cat"><i class="fa-solid fa-cat"></i> Kediler</button>
+      <button class="tab-btn" data-type="dog"><i class="fa-solid fa-dog"></i> Köpekler</button>
+      <button class="tab-btn" data-type="adopt"><i class="fa-solid fa-house-chimney-heart"></i> Yuva Arayanlar</button>
+    </div>
+  </header>
+
+  <main class="app-content">
+    <div id="animal-grid" class="cat-grid">
+      <!-- Hayvanlar JavaScript ile eklenecek -->
+    </div>
+  </main>
+
+  <button id="fab-add" class="fab"><i class="fa-solid fa-plus"></i> Yeni Ekle</button>
+
+  <!-- Hayvan Detay Modalı -->
+  <div id="animal-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-modal" id="close-detail-modal"><i class="fa-solid fa-times"></i></button>
+      <div class="modal-header-img">
+        <img id="m-img" src="" alt="Resim" />
+      </div>
+      <div class="modal-body">
+        <h2 id="m-name">İsim</h2>
+        <div id="m-adopt-badge" style="display:none; background:#10b981; color:#fff; padding:0.4rem 0.8rem; border-radius:1rem; margin-bottom:0.8rem; font-size:0.9rem; font-weight:600; align-items:center; gap:0.4rem;"><i class="fa-solid fa-house-chimney-heart"></i> Sahiplendirilecek (Yuva Arıyor!)</div>
+        <p class="m-location"><i class="fa-solid fa-location-dot"></i> <span id="m-location">Konum</span></p>
+        
+        <div class="status-grid">
+          <div class="status-card">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <h3>Sağlık</h3>
+            <p id="m-health">Durum</p>
+          </div>
+          <div class="status-card">
+            <i class="fa-solid fa-syringe"></i>
+            <h3>Aşı</h3>
+            <p id="m-vaccine">Aşı Durumu</p>
+          </div>
+          <div class="status-card" id="m-neutered-card">
+            <i class="fa-solid fa-scissors"></i>
+            <h3>Kısırlaştırma</h3>
+            <p id="m-neutered">Durum</p>
+          </div>
+          <div class="status-card">
+            <i class="fa-solid fa-cake-candles"></i>
+            <h3>Yaş Tahmini</h3>
+            <p id="m-age">Bilinmiyor</p>
+          </div>
+          <div class="status-card" id="m-adopt-card" style="display: none; background: #ecfdf5; border: 2px solid #10b981;">
+            <i class="fa-solid fa-phone" style="color: #10b981;"></i>
+            <h3 style="color: #10b981;">İletişim Bilgisi</h3>
+            <p id="m-contact" style="color: #047857; font-weight: bold; overflow-wrap: break-word; word-break: break-all;">-</p>
+          </div>
+        </div>
+        <button id="edit-animal-btn" class="submit-btn" style="margin-top: 1.5rem; background-color: var(--text-dark);"><i class="fa-solid fa-pen"></i> Bilgileri Güncelle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yeni Ekle Modalı -->
+  <div id="add-modal" class="modal-overlay hidden">
+    <div class="modal-content add-modal-content">
+      <button class="close-modal" id="close-add-modal"><i class="fa-solid fa-times"></i></button>
+      <div class="modal-body">
+        <h2>Yeni Hayvan Ekle</h2>
+        <form id="add-form">
+          <div class="form-group">
+            <label>Tür</label>
+            <select id="a-type" required>
+              <option value="cat">Kedi</option>
+              <option value="dog">Köpek</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>İsim</label>
+            <input type="text" id="a-name" placeholder="Örn: Karabaş" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Fotoğraf Yükle (Kamera/Galeri)</label>
+            <input type="file" id="a-image-file" accept="image/*">
+            <small id="a-image-help" style="color: var(--text-light); margin-top: 0.2rem; font-size: 0.8rem;">Bilgisayardan/Telefondan resim seçin.</small>
+          </div>
+          
+          <div class="form-group">
+            <label>Konum</label>
+            <input type="text" id="a-location" placeholder="Örn: Mühendislik Fakültesi" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Yaş Tahmini</label>
+            <input type="text" id="a-age" placeholder="Örn: 2 Aylık, 3 Yaşında" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Sağlık Durumu</label>
+            <input type="text" id="a-health" placeholder="Örn: Sağlıklı" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Aşı Durumu</label>
+            <input type="text" id="a-vaccine" placeholder="Örn: Karma ve Kuduz yapıldı" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Kısırlaştırma Durumu</label>
+            <select id="a-neutered" required>
+              <option value="Kısırlaştırıldı">Kısırlaştırıldı</option>
+              <option value="Kısırlaştırılmadı">Kısırlaştırılmadı</option>
+              <option value="Bilinmiyor">Bilinmiyor</option>
+            </select>
+          </div>
+
+          <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:0.5rem; margin-top:1.5rem; margin-bottom:1rem; cursor:pointer;">
+            <input type="checkbox" id="a-adopt" style="width:20px; height:20px; cursor:pointer;">
+            <label for="a-adopt" style="margin:0; cursor:pointer; color:#10b981; font-weight:600;">🏠 Bu canlıya yuva aranıyor</label>
+          </div>
+          
+          <div class="form-group" id="a-contact-container" style="display: none; background: #ecfdf5; padding: 1rem; border-radius: 0.5rem; border: 1px solid #10b981;">
+            <label style="color: #047857;">Sahiplendirme İletişim Bilgisi</label>
+            <input type="text" id="a-contact" placeholder="Örn: 05xx xxx xx xx / IG: @kullaniciadi">
+          </div>
+          
+          <button type="submit" class="submit-btn"><i class="fa-solid fa-save"></i> Kaydet</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resim Büyütme Modalı -->
+  <div id="image-zoom-modal" class="modal-overlay hidden" style="z-index: 200; align-items: center;">
+    <div style="width: 90%; max-width: 500px; position: relative; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column;" class="zoom-content-wrapper">
+      <button class="close-modal" id="close-zoom-modal" style="position: absolute; top: -3.5rem; right: 0; background: rgba(0,0,0,0.5);"><i class="fa-solid fa-times"></i></button>
+      <img id="z-img" src="" alt="Büyütülmüş Resim" style="width: 100%; border-radius: 1rem; box-shadow: 0 15px 35px rgba(0,0,0,0.5); object-fit: contain; max-height: 80vh;" />
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
