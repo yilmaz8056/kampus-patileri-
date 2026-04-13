@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kampus-kedileri-v2';
+const CACHE_NAME = 'kampus-kedileri-v4';
 const urlsToCache = [
   './index.html',
   './style.css',
@@ -7,6 +7,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Yeni versiyonu beklemeden hemen kur
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -15,11 +16,37 @@ self.addEventListener('install', event => {
   );
 });
 
+// Eski Önbellekleri Temizle
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim(); // Kontrolü anında ele al
+});
+
+// NETWORK FIRST (Önce İnternet, Çalışmazsa Önbellek)
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        return response || fetch(event.request);
+        // Eğer ağ isteği başarılıysa, cevabın kopyasını önbelleğe atıp kaydet (Güncel kalsın)
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+        return response;
+      })
+      .catch(() => {
+        // Eğer internet yoksa veya ağ çöktüyse önbellekteki (cache) veriyi sun
+        return caches.match(event.request);
       })
   );
 });
