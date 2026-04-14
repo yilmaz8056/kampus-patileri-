@@ -304,12 +304,15 @@ function setupEventListeners() {
   const stationOnlyFields = document.getElementById('station-only-fields');
 
   aTypeToggle.addEventListener('change', (e) => {
+     const isEditing = !!editingAnimalId;
      if (e.target.value === 'station') {
         animalOnlyFields.style.display = 'none';
         stationOnlyFields.style.display = 'block';
+        document.querySelector('#add-modal h2').innerText = isEditing ? 'İstasyonu Güncelle' : 'Yeni İstasyon Ekle';
      } else {
         animalOnlyFields.style.display = 'block';
         stationOnlyFields.style.display = 'none';
+        document.querySelector('#add-modal h2').innerText = isEditing ? 'Hayvanı Güncelle' : 'Yeni Hayvan Ekle';
      }
   });
 
@@ -411,7 +414,6 @@ function setupEventListeners() {
   // YENİ EKLE BUTONU
   fabAdd.addEventListener('click', () => {
     editingAnimalId = null;
-    document.querySelector('#add-modal h2').innerText = 'Yeni Hayvan Ekle';
     document.getElementById('a-image-help').innerText = 'Bilgisayardan/Telefondan resim seçin. (Zorunlu)';
     document.getElementById('delete-animal-btn').style.display = 'none'; // Ekleme yaparken gizle
     addForm.reset();
@@ -431,7 +433,6 @@ function setupEventListeners() {
     if (!currentViewedAnimal) return;
     
     editingAnimalId = currentViewedAnimal.id;
-    document.querySelector('#add-modal h2').innerText = 'Hayvanı Güncelle';
     document.getElementById('a-image-help').innerText = 'Fotoğraf seçmezseniz mevcut fotoğraf ile kalır.';
     document.getElementById('a-image-file').required = false;
     document.getElementById('a-camera-file').required = false;
