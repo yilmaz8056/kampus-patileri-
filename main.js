@@ -697,15 +697,19 @@ function openDetailModal(animal) {
   const guardianBadge = document.getElementById('m-guardian-badge');
   const guardianBtn = document.getElementById('guardian-btn');
   const guardianName = document.getElementById('m-guardian-name');
-  if (animal.guardian) {
-    guardianBadge.style.display = 'flex';
-    guardianName.textContent = animal.guardian;
+  if (animal.type === 'station') {
+    guardianBadge.style.display = 'none';
     guardianBtn.style.display = 'none';
   } else {
-    guardianBadge.style.display = 'none';
-    guardianBtn.style.display = 'block';
+    if (animal.guardian) {
+      guardianBadge.style.display = 'flex';
+      guardianName.textContent = animal.guardian;
+      guardianBtn.style.display = 'none';
+    } else {
+      guardianBadge.style.display = 'none';
+      guardianBtn.style.display = 'block';
+    }
   }
-  
   // Karakter Kapsüllerini Doldurma
   const traitsContainer = document.getElementById('m-traits');
   traitsContainer.innerHTML = '';
