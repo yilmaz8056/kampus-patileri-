@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#ff8c42">
 
   <title>Kampüs Patileri</title>
-  <link rel="stylesheet" href="style.css?v=5.0">
+  <link rel="stylesheet" href="style.css?v=6.0">
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -38,6 +38,7 @@
       <button class="tab-btn active" data-type="cat"><i class="fa-solid fa-cat"></i> Kediler</button>
       <button class="tab-btn" data-type="dog"><i class="fa-solid fa-dog"></i> Köpekler</button>
       <button class="tab-btn" data-type="adopt"><i class="fa-solid fa-house-chimney-heart"></i> Yuva Arayanlar</button>
+      <button class="tab-btn" data-type="system"><i class="fa-solid fa-chart-pie"></i> Sistem</button>
     </div>
   </header>
 
@@ -58,6 +59,7 @@
       </div>
       <div class="modal-body">
         <h2 id="m-name">İsim</h2>
+        <div id="m-guardian-badge" style="display:none; background: linear-gradient(135deg, #8b5cf6, #d946ef); color:#fff; padding:0.4rem 0.8rem; border-radius:1rem; margin-bottom:0.8rem; font-size:0.9rem; font-weight:bold; align-items:center; gap:0.4rem; box-shadow:0 4px 6px rgba(0,0,0,0.15);"><i class="fa-solid fa-shield-halved"></i> ✨ <span id="m-guardian-name">Ahmet</span>'in Korumasında</div>
         <div id="m-traits" style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem;"></div>
         <div id="m-adopt-badge" style="display:none; background:#10b981; color:#fff; padding:0.4rem 0.8rem; border-radius:1rem; margin-bottom:0.8rem; font-size:0.9rem; font-weight:600; align-items:center; gap:0.4rem;"><i class="fa-solid fa-house-chimney-heart"></i> Sahiplendirilecek (Yuva Arıyor!)</div>
         <p class="m-location"><i class="fa-solid fa-location-dot"></i> <span id="m-location">Konum</span></p>
@@ -91,6 +93,7 @@
         </div>
         
         <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem;">
+           <button id="guardian-btn" class="submit-btn" style="margin-top:0; background: linear-gradient(135deg, #8b5cf6, #c026d3); border:none; display:none;"><i class="fa-solid fa-shield-heart"></i> Koruyucu Meleği Ol</button>
            <button id="feed-animal-btn" class="submit-btn" style="margin-top:0; background-color: #f59e0b;"><i class="fa-solid fa-bone"></i> Bugün Mama Verdim</button>
            <p id="m-last-fed" style="text-align:center; font-size:0.85rem; color:var(--text-light); font-weight:600;">Son beslenme: Henüz veri yok</p>
         </div>
@@ -127,9 +130,13 @@
           </div>
           
           <div class="form-group">
-            <label>Fotoğraf Yükle (Kamera/Galeri)</label>
-            <input type="file" id="a-image-file" accept="image/*">
-            <small id="a-image-help" style="color: var(--text-light); margin-top: 0.2rem; font-size: 0.8rem;">Bilgisayardan/Telefondan resim seçin.</small>
+            <label>📷 Fotoğraf Seç (Zorunlu)</label>
+            <p id="a-image-help" style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.5rem;"></p>
+            <div style="display:flex; gap:0.5rem;">
+               <label style="flex:1; background:var(--bg-color); border:1px dashed var(--active-color); border-radius:0.8rem; padding:0.8rem; text-align:center; cursor:pointer; color:var(--text-dark); font-weight:600;"><i class="fa-solid fa-image"></i> Galeriden<input type="file" id="a-image-file" accept="image/*" style="display:none;"></label>
+               <label style="flex:1; background:var(--bg-color); border:1px dashed var(--active-color); border-radius:0.8rem; padding:0.8rem; text-align:center; cursor:pointer; color:var(--text-dark); font-weight:600;"><i class="fa-solid fa-camera"></i> Şimdi Çek<input type="file" id="a-camera-file" accept="image/*" capture="environment" style="display:none;"></label>
+            </div>
+            <p id="selected-file-name" style="font-size:0.85rem; color:var(--active-color); margin-top:0.5rem; text-align:center; font-weight:bold;"></p>
           </div>
           
           <div class="form-group">
@@ -209,6 +216,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=5.0"></script>
+  <script src="main.js?v=6.0"></script>
 </body>
 </html>

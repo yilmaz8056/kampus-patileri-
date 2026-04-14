@@ -107,6 +107,75 @@ function renderAnimals() {
     );
   }
   
+  if (currentType === 'system') {
+    const totalAnimals = animals.length;
+    const dogs = animals.filter(a => a.type === 'dog').length;
+    const cats = animals.filter(a => a.type === 'cat').length;
+    const sosCount = animals.filter(a => a.isSOS).length;
+    const adoptCount = animals.filter(a => a.isAdoptable).length;
+
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; display:flex; flex-direction:column; gap:1.5rem;">
+         <div style="background:var(--bg-color); padding:1.5rem; border-radius:1rem; border:1px solid var(--glass-border); box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+           <h2 style="margin-bottom:1rem; color:var(--text-dark);"><i class="fa-solid fa-chart-pie"></i> Kampüs İstatistikleri</h2>
+           <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+             <div style="background:#3b82f6; color:white; padding:1rem; border-radius:0.8rem; text-align:center;">
+               <h3 style="font-size:2rem; margin:0;">${totalAnimals}</h3><p style="margin:0; font-size:0.85rem; opacity:0.9;">Kayıtlı Can</p>
+             </div>
+             <div style="background:#f59e0b; color:white; padding:1rem; border-radius:0.8rem; text-align:center;">
+               <h3 style="font-size:2rem; margin:0;">${currentScore}</h3><p style="margin:0; font-size:0.85rem; opacity:0.9;">Toplam Puanınız</p>
+             </div>
+             <div style="background:#ef4444; color:white; padding:1rem; border-radius:0.8rem; text-align:center;">
+               <h3 style="font-size:2rem; margin:0;">${sosCount}</h3><p style="margin:0; font-size:0.85rem; opacity:0.9;">Acil Durum (SOS)</p>
+             </div>
+             <div style="background:#10b981; color:white; padding:1rem; border-radius:0.8rem; text-align:center;">
+               <h3 style="font-size:2rem; margin:0;">${adoptCount}</h3><p style="margin:0; font-size:0.85rem; opacity:0.9;">Yuva Arayan</p>
+             </div>
+           </div>
+         </div>
+
+         <div style="background:var(--bg-color); padding:1.5rem; border-radius:1rem; border:1px solid var(--glass-border); box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+           <h2 style="margin-bottom:0.5rem; color:var(--text-dark);"><i class="fa-solid fa-cloud-arrow-up"></i> Cihaz Senkronizasyonu (Sync)</h2>
+           <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:1rem;">Zaten bir veriniz varsa Kod panelini kopyalayabilirsiniz, veya boş cihaza kod yapıştırarak anında indirebilirsiniz.</p>
+           <textarea id="sync-data-textarea" rows="4" style="width:100%; padding:0.8rem; border-radius:0.5rem; border:1px solid var(--active-color); background:rgba(0,0,0,0.02); resize:none; font-family:monospace; font-size:0.7rem; box-sizing:border-box;" placeholder="JSON Cihaz Senkronizasyon Kodu buraya gelecek..."></textarea>
+           <div style="display:flex; gap:0.5rem; margin-top:0.8rem;">
+              <button id="export-sync-btn" class="submit-btn" style="margin-top:0; flex:1; background:#8b5cf6;"><i class="fa-solid fa-copy"></i> Kodu Kopyala</button>
+              <button id="import-sync-btn" class="submit-btn" style="margin-top:0; flex:1; background:#ef4444;"><i class="fa-solid fa-download"></i> Kodu Yükle</button>
+           </div>
+         </div>
+      </div>
+    `;
+
+    document.getElementById('export-sync-btn').addEventListener('click', () => {
+       const exportData = JSON.stringify(animals);
+       document.getElementById('sync-data-textarea').value = exportData;
+       navigator.clipboard.writeText(exportData);
+       alert("🎉 Sistem verileri başarıyla panele kopyalandı! Artık bunu Whatsapp vb. ile kopyalayıp arkadaşlarınıza gönderebilirsiniz.");
+    });
+
+    document.getElementById('import-sync-btn').addEventListener('click', () => {
+       const text = document.getElementById('sync-data-textarea').value;
+       if (!text) return alert("Lütfen boş alana Kod metnini yapıştırın!");
+       if (confirm("⚠️ DİKKAT: İçeri aktarım yaparsanız telefonunuzdaki mevcut listeler KOMPLE SİLİNECEK ve bu kodun içindekiler yüklenecektir! Emin misiniz?")) {
+         try {
+           const parsed = JSON.parse(text);
+           if (Array.isArray(parsed)) {
+             animals = parsed;
+             saveData();
+             alert("✅ Veriler Mükemmel Şekilde Yüklendi! Yeni cihazla senkronize oldunuz. Sayfa yenileniyor...");
+             location.reload();
+           } else {
+             alert("Hatalı veri yapısı! (Dizi değil)");
+           }
+         } catch(e) {
+           alert("Hata! Kod bozuk veya kopuk kopyalanmış: " + e.message);
+         }
+       }
+    });
+
+    return;
+  }
+
   if (filteredAnimals.length === 0) {
     grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 2rem;">Henüz kayıtlı canlı bulunamadı.</p>`;
     return;
@@ -164,6 +233,8 @@ function setupEventListeners() {
         root.style.setProperty('--active-color', '#3b82f6');
       } else if (currentType === 'adopt') {
         root.style.setProperty('--active-color', '#10b981'); // Yuva arayanlar için tatlı yeşil ton
+      } else if (currentType === 'system') {
+        root.style.setProperty('--active-color', '#8b5cf6'); // Sistem için estetik mor ton
       } else {
         root.style.setProperty('--active-color', '#ff8c42');
       }
@@ -224,6 +295,32 @@ function setupEventListeners() {
      }
   });
 
+  // Koruyucu Ol Butonu (Guardian)
+  const guardianBtn = document.getElementById('guardian-btn');
+  guardianBtn.addEventListener('click', () => {
+     if (currentViewedAnimal) {
+       const protector = prompt("Süper Etkileşim! Lütfen isminizi veya takma adınızı girin:");
+       if (protector && protector.trim() !== '') {
+          const idx = animals.findIndex(a => a.id === currentViewedAnimal.id);
+          if (idx !== -1) {
+             animals[idx].guardian = protector.trim();
+             saveData();
+             alert("Tebrikler! Artık profilinde sizin korumanızda olduğu herkese görünecek. 🛡️✨");
+             openDetailModal(animals[idx]); // Ekranı tazele
+          }
+       }
+     }
+  });
+  
+  // Kamera ve Resim Dosyası isim gösterme akıllı aracı
+  const handleFileName = (e) => {
+     if(e.target.files && e.target.files[0]) {
+        document.getElementById('selected-file-name').textContent = "Seçilen: " + e.target.files[0].name;
+     }
+  };
+  document.getElementById('a-image-file').addEventListener('change', handleFileName);
+  document.getElementById('a-camera-file').addEventListener('change', handleFileName);
+
   // Hayvan Silme Butonu
   const deleteBtn = document.getElementById('delete-animal-btn');
   deleteBtn.addEventListener('click', () => {
@@ -263,6 +360,7 @@ function setupEventListeners() {
     document.querySelector('#add-modal h2').innerText = 'Hayvanı Güncelle';
     document.getElementById('a-image-help').innerText = 'Fotoğraf seçmezseniz mevcut fotoğraf ile kalır.';
     document.getElementById('a-image-file').required = false;
+    document.getElementById('a-camera-file').required = false;
     document.getElementById('delete-animal-btn').style.display = 'block'; // Güncellerken Silmeyi Göster
 
     // Alanları eski bilgilerle doldur
@@ -312,8 +410,9 @@ function setupEventListeners() {
   addForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const fileInput = document.getElementById('a-image-file');
-    const file = fileInput.files[0];
+    const galeryFile = document.getElementById('a-image-file').files[0];
+    const cameraFile = document.getElementById('a-camera-file').files[0];
+    const file = galeryFile || cameraFile;
     const submitBtn = addForm.querySelector('.submit-btn');
 
     // Eğer güncelleme yapıyor ve resim seçmemişse (Foto değiştirmek istemiyorsa)
@@ -506,6 +605,19 @@ function openDetailModal(animal) {
   const detailModal = document.getElementById('animal-modal');
   document.getElementById('m-img').src = animal.image;
   document.getElementById('m-name').textContent = animal.name;
+  
+  // Koruyucu Rozeti Yönetimi
+  const guardianBadge = document.getElementById('m-guardian-badge');
+  const guardianBtn = document.getElementById('guardian-btn');
+  const guardianName = document.getElementById('m-guardian-name');
+  if (animal.guardian) {
+    guardianBadge.style.display = 'flex';
+    guardianName.textContent = animal.guardian;
+    guardianBtn.style.display = 'none';
+  } else {
+    guardianBadge.style.display = 'none';
+    guardianBtn.style.display = 'block';
+  }
   
   // Karakter Kapsüllerini Doldurma
   const traitsContainer = document.getElementById('m-traits');
