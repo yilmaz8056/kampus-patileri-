@@ -415,6 +415,7 @@ function setupEventListeners() {
     document.getElementById('a-image-help').innerText = 'Bilgisayardan/Telefondan resim seçin. (Zorunlu)';
     document.getElementById('delete-animal-btn').style.display = 'none'; // Ekleme yaparken gizle
     addForm.reset();
+    document.getElementById('a-type').dispatchEvent(new Event('change')); // Form sıfırlandıktan sonra state'i resetle
     
     document.getElementById('a-sos').checked = false;
     document.querySelectorAll('input[name="trait"]').forEach(cb => cb.checked = false);
@@ -438,11 +439,18 @@ function setupEventListeners() {
 
     // Alanları eski bilgilerle doldur
     document.getElementById('a-type').value = currentViewedAnimal.type;
+    document.getElementById('a-type').dispatchEvent(new Event('change'));
+    
     document.getElementById('a-name').value = currentViewedAnimal.name;
-    document.getElementById('a-age').value = currentViewedAnimal.age || 'Bilinmiyor';
     document.getElementById('a-location').value = currentViewedAnimal.location;
-    document.getElementById('a-health').value = currentViewedAnimal.health;
-    document.getElementById('a-vaccine').value = currentViewedAnimal.vaccine;
+
+    if (currentViewedAnimal.type === 'station') {
+       document.getElementById('a-station-state').value = currentViewedAnimal.stationState || 'Dolu ✅';
+    } else {
+       document.getElementById('a-age').value = currentViewedAnimal.age || 'Bilinmiyor';
+       document.getElementById('a-health').value = currentViewedAnimal.health;
+       document.getElementById('a-vaccine').value = currentViewedAnimal.vaccine;
+    }
     
     if (['Kısırlaştırıldı', 'Kısırlaştırılmadı', 'Bilinmiyor'].includes(currentViewedAnimal.neutered)) {
        document.getElementById('a-neutered').value = currentViewedAnimal.neutered;
