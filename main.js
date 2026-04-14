@@ -32,6 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let currentScore = 0;
+let unlockedTrophies = [];
+
+function checkTrophies() {
+  let newUnlocked = false;
+  if (!unlockedTrophies.includes('ilk_merhamet') && currentScore >= 10) {
+    unlockedTrophies.push('ilk_merhamet'); newUnlocked = "🐾 İlk Merhamet";
+  }
+  if (!unlockedTrophies.includes('kampus_kahramani') && currentScore >= 50) {
+    unlockedTrophies.push('kampus_kahramani'); newUnlocked = "🛡️ Kampüs Kahramanı";
+  }
+  const hasGuardian = animals.some(a => a.guardian);
+  if (!unlockedTrophies.includes('koruyucu_melek') && hasGuardian) {
+    unlockedTrophies.push('koruyucu_melek'); newUnlocked = "👼 Koruyucu Melek";
+  }
+  
+  if (newUnlocked) {
+     localStorage.setItem('kampus_trophies', JSON.stringify(unlockedTrophies));
+     if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 200]);
+     alert("🏆 TEBRİKLER YENİ KUPA: " + newUnlocked + "\n\nSistem sekmesinden detaylara bakabilirsiniz!");
+  }
+}
 
 function initApp() {
   const savedTheme = localStorage.getItem('kampus-theme');
@@ -44,6 +65,9 @@ function initApp() {
     currentScore = parseInt(savedScore);
     document.getElementById('user-score').innerHTML = `<i class="fa-solid fa-gem"></i> ${currentScore} Puan`;
   }
+
+  const savedTrophies = localStorage.getItem('kampus_trophies');
+  if (savedTrophies) unlockedTrophies = JSON.parse(savedTrophies);
 
   const storedData = localStorage.getItem('kampus_hayvanlari_v2');
   if (storedData) {
@@ -62,6 +86,7 @@ function updateScore(points) {
   scoreEl.innerHTML = `<i class="fa-solid fa-gem"></i> ${currentScore} Puan`;
   scoreEl.style.transform = 'scale(1.2)';
   setTimeout(() => scoreEl.style.transform = 'scale(1)', 300);
+  checkTrophies();
 }
 
 function timeAgo(date) {
@@ -82,6 +107,8 @@ function timeAgo(date) {
 function saveData() {
   try {
     localStorage.setItem('kampus_hayvanlari_v2', JSON.stringify(animals));
+    if ('vibrate' in navigator) navigator.vibrate(50); // Haptik Titreşim!
+    checkTrophies();
     return true;
   } catch (e) {
     alert("Kayıt başarısız! Müsait alan dolmuş olabilir veya tarayıcı kısıtlıyor. (" + e.name + ")");
@@ -116,6 +143,21 @@ function renderAnimals() {
 
     grid.innerHTML = `
       <div style="grid-column: 1/-1; display:flex; flex-direction:column; gap:1.5rem;">
+         <div style="background:var(--bg-color); padding:1.5rem; border-radius:1rem; border:1px solid var(--glass-border); box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+           <h2 style="margin-bottom:1rem; color:var(--text-dark);"><i class="fa-solid fa-trophy"></i> Başarımlar (Kupalar)</h2>
+           <div style="display:flex; flex-direction:column; gap:0.5rem;">
+             <div style="padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem; background:${unlockedTrophies.includes('ilk_merhamet') ? '#fef3c7' : 'rgba(0,0,0,0.05)'}; border:${unlockedTrophies.includes('ilk_merhamet') ? '1px solid #f59e0b' : 'none'}; color:${unlockedTrophies.includes('ilk_merhamet') ? '#d97706' : 'var(--text-light)'}">
+                <i class="fa-solid fa-medal" style="font-size:1.5rem;"></i> <div><b>İlk Merhamet:</b> <br><span style="font-size:0.8rem">Sisteme 10 İyilik Puanı kazandır.</span></div>
+             </div>
+             <div style="padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem; background:${unlockedTrophies.includes('kampus_kahramani') ? '#fef3c7' : 'rgba(0,0,0,0.05)'}; border:${unlockedTrophies.includes('kampus_kahramani') ? '1px solid #f59e0b' : 'none'}; color:${unlockedTrophies.includes('kampus_kahramani') ? '#d97706' : 'var(--text-light)'}">
+                <i class="fa-solid fa-medal" style="font-size:1.5rem;"></i> <div><b>Kampüs Kahramanı:</b> <br><span style="font-size:0.8rem">50 Puana ulaş.</span></div>
+             </div>
+             <div style="padding:0.8rem; border-radius:0.5rem; display:flex; align-items:center; gap:0.5rem; background:${unlockedTrophies.includes('koruyucu_melek') ? '#f3e8ff' : 'rgba(0,0,0,0.05)'}; border:${unlockedTrophies.includes('koruyucu_melek') ? '1px solid #a855f7' : 'none'}; color:${unlockedTrophies.includes('koruyucu_melek') ? '#7e22ce' : 'var(--text-light)'}">
+                <i class="fa-solid fa-shield-halved" style="font-size:1.5rem;"></i> <div><b>Koruyucu Melek:</b> <br><span style="font-size:0.8rem">Bir canın sorumluluğunu üstlen.</span></div>
+             </div>
+           </div>
+         </div>
+
          <div style="background:var(--bg-color); padding:1.5rem; border-radius:1rem; border:1px solid var(--glass-border); box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
            <h2 style="margin-bottom:1rem; color:var(--text-dark);"><i class="fa-solid fa-chart-pie"></i> Kampüs İstatistikleri</h2>
            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -185,25 +227,24 @@ function renderAnimals() {
     const card = document.createElement('div');
     card.className = animal.isSOS ? 'cat-card sos-card' : 'cat-card'; 
     
-    // Sahiplendirme Badges'i
-    const adoptBadge = animal.isAdoptable 
-        ? `<div style="background:#10b981; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-house-chimney-heart"></i> Yuva Arıyor</div>` 
-        : '';
-        
-    // Kısırlaştırılmadı Badges'i
-    const isUnneutered = animal.neutered && (animal.neutered === 'Kısırlaştırılmadı' || animal.neutered.toLowerCase().includes('kısırlaştırılmadı'));
-    const neuteredBadge = isUnneutered
-        ? `<div style="background:#ef4444; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-triangle-exclamation"></i> Kısır Değil</div>` 
-        : '';
-        
-    const sosBadge = animal.isSOS ? `<div class="sos-badge">🚨 ACİL DURUM</div>` : '';
+    let badgesHTML = '';
+    if (animal.type === 'station') {
+       const badgeColor = animal.stationState && animal.stationState.includes('Dolu') ? '#10b981' : (animal.stationState && animal.stationState.includes('Boş') ? '#ef4444' : '#f59e0b');
+       badgesHTML = `<div style="background:${badgeColor}; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-info-circle"></i> ${animal.stationState || 'Durum Bilinmiyor'}</div>`;
+    } else {
+       const adoptBadge = animal.isAdoptable ? `<div style="background:#10b981; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-house-chimney-heart"></i> Yuva Arıyor</div>` : '';
+       const isUnneutered = animal.neutered && (animal.neutered === 'Kısırlaştırılmadı' || animal.neutered.toLowerCase().includes('kısırlaştırılmadı'));
+       const neuteredBadge = isUnneutered ? `<div style="background:#ef4444; color:white; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);"><i class="fa-solid fa-triangle-exclamation"></i> Kısır Değil</div>` : '';
+       badgesHTML = adoptBadge + neuteredBadge;
+    }
+
+    const sosBadge = animal.isSOS && animal.type !== 'station' ? `<div class="sos-badge">🚨 ACİL DURUM</div>` : '';
 
     card.innerHTML = `
       <div class="cat-img-wrapper" style="position:relative;">
         ${sosBadge}
         <div style="position:absolute; top:8px; right:8px; display:flex; flex-direction:column; gap:0.4rem; z-index:10; align-items:flex-end;">
-          ${adoptBadge}
-          ${neuteredBadge}
+          ${badgesHTML}
         </div>
         <img src="${animal.image}" alt="${animal.name}">
       </div>
@@ -233,6 +274,8 @@ function setupEventListeners() {
         root.style.setProperty('--active-color', '#3b82f6');
       } else if (currentType === 'adopt') {
         root.style.setProperty('--active-color', '#10b981'); // Yuva arayanlar için tatlı yeşil ton
+      } else if (currentType === 'station') {
+        root.style.setProperty('--active-color', '#eab308'); // İstasyonlar için sarı sıcak ton
       } else if (currentType === 'system') {
         root.style.setProperty('--active-color', '#8b5cf6'); // Sistem için estetik mor ton
       } else {
@@ -255,6 +298,20 @@ function setupEventListeners() {
 
   const adoptCheckbox = document.getElementById('a-adopt');
   const contactContainer = document.getElementById('a-contact-container');
+
+  const aTypeToggle = document.getElementById('a-type');
+  const animalOnlyFields = document.getElementById('animal-only-fields');
+  const stationOnlyFields = document.getElementById('station-only-fields');
+
+  aTypeToggle.addEventListener('change', (e) => {
+     if (e.target.value === 'station') {
+        animalOnlyFields.style.display = 'none';
+        stationOnlyFields.style.display = 'block';
+     } else {
+        animalOnlyFields.style.display = 'block';
+        stationOnlyFields.style.display = 'none';
+     }
+  });
 
   // Adopsiyon Checkbox Değişim Dinleyicisi
   adoptCheckbox.addEventListener('change', (e) => {
@@ -310,6 +367,23 @@ function setupEventListeners() {
           }
        }
      }
+  });
+  
+  // Sosyal Paylaşım Butonu (Web Share API)
+  const shareBtn = document.getElementById('share-btn');
+  shareBtn.addEventListener('click', () => {
+    if ('vibrate' in navigator) navigator.vibrate(50);
+    if (navigator.share && currentViewedAnimal) {
+       navigator.share({
+         title: 'Kampüs Patileri Yardım Çağrısı',
+         text: `Acil! ${currentViewedAnimal.name} isimli canımız (${currentViewedAnimal.location} bölgesinde) doğa koruma uygulamasında yardım bekliyor. Lütfen ilgilenelim!`,
+         url: window.location.href
+       })
+       .then(() => console.log('Başarıyla paylaşıldı'))
+       .catch((error) => console.log('Paylaşım hatası', error));
+    } else {
+       alert("Cihazınızın tarayıcısı otomatik paylaşım donanımını desteklemiyor.");
+    }
   });
   
   // Kamera ve Resim Dosyası isim gösterme akıllı aracı
@@ -425,15 +499,19 @@ function setupEventListeners() {
       if (idx !== -1) {
         animals[idx].type = document.getElementById('a-type').value;
         animals[idx].name = document.getElementById('a-name').value;
-        animals[idx].age = document.getElementById('a-age').value;
         animals[idx].location = document.getElementById('a-location').value;
-        animals[idx].health = document.getElementById('a-health').value;
-        animals[idx].vaccine = document.getElementById('a-vaccine').value;
-        animals[idx].neutered = document.getElementById('a-neutered').value;
-        animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
-        animals[idx].contact = document.getElementById('a-contact').value;
-        animals[idx].isSOS = document.getElementById('a-sos').checked;
-        animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+        if (animals[idx].type === 'station') {
+          animals[idx].stationState = document.getElementById('a-station-state').value;
+        } else {
+          animals[idx].age = document.getElementById('a-age').value;
+          animals[idx].health = document.getElementById('a-health').value;
+          animals[idx].vaccine = document.getElementById('a-vaccine').value;
+          animals[idx].neutered = document.getElementById('a-neutered').value;
+          animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
+          animals[idx].contact = document.getElementById('a-contact').value;
+          animals[idx].isSOS = document.getElementById('a-sos').checked;
+          animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+        }
         saveData();
       }
 
@@ -476,16 +554,20 @@ function setupEventListeners() {
               if (idx !== -1) {
                 animals[idx].type = document.getElementById('a-type').value;
                 animals[idx].name = document.getElementById('a-name').value;
-                animals[idx].age = document.getElementById('a-age').value;
                 animals[idx].image = compressedBase64;
                 animals[idx].location = document.getElementById('a-location').value;
-                animals[idx].health = document.getElementById('a-health').value;
-                animals[idx].vaccine = document.getElementById('a-vaccine').value;
-                animals[idx].neutered = document.getElementById('a-neutered').value;
-                animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
-                animals[idx].contact = document.getElementById('a-contact').value;
-                animals[idx].isSOS = document.getElementById('a-sos').checked;
-                animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+                if (animals[idx].type === 'station') {
+                  animals[idx].stationState = document.getElementById('a-station-state').value;
+                } else {
+                  animals[idx].age = document.getElementById('a-age').value;
+                  animals[idx].health = document.getElementById('a-health').value;
+                  animals[idx].vaccine = document.getElementById('a-vaccine').value;
+                  animals[idx].neutered = document.getElementById('a-neutered').value;
+                  animals[idx].isAdoptable = document.getElementById('a-adopt').checked;
+                  animals[idx].contact = document.getElementById('a-contact').value;
+                  animals[idx].isSOS = document.getElementById('a-sos').checked;
+                  animals[idx].traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+                }
               }
               const saved = saveData(); 
               if (saved) {
@@ -497,17 +579,23 @@ function setupEventListeners() {
                 id: Date.now(),
                 type: document.getElementById('a-type').value,
                 name: document.getElementById('a-name').value,
-                age: document.getElementById('a-age').value,
                 image: compressedBase64,
-                location: document.getElementById('a-location').value,
-                health: document.getElementById('a-health').value,
-                vaccine: document.getElementById('a-vaccine').value,
-                neutered: document.getElementById('a-neutered').value,
-                isAdoptable: document.getElementById('a-adopt').checked,
-                contact: document.getElementById('a-contact').value,
-                isSOS: document.getElementById('a-sos').checked,
-                traits: Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value)
+                location: document.getElementById('a-location').value
               };
+              
+              if (newAnimal.type === 'station') {
+                 newAnimal.stationState = document.getElementById('a-station-state').value;
+              } else {
+                 newAnimal.age = document.getElementById('a-age').value;
+                 newAnimal.health = document.getElementById('a-health').value;
+                 newAnimal.vaccine = document.getElementById('a-vaccine').value;
+                 newAnimal.neutered = document.getElementById('a-neutered').value;
+                 newAnimal.isAdoptable = document.getElementById('a-adopt').checked;
+                 newAnimal.contact = document.getElementById('a-contact').value;
+                 newAnimal.isSOS = document.getElementById('a-sos').checked;
+                 newAnimal.traits = Array.from(document.querySelectorAll('input[name="trait"]:checked')).map(cb => cb.value);
+              }
+              
               animals.push(newAnimal);
               const saved = saveData(); 
               if (!saved) {
@@ -628,14 +716,34 @@ function openDetailModal(animal) {
     });
   }
   
-  // Mama Takibi Yazısı
+  const statusGrid = document.querySelector('.status-grid');
+  const feedBtn = document.getElementById('feed-animal-btn');
   const lastFedEl = document.getElementById('m-last-fed');
-  if (animal.lastFed) {
-    lastFedEl.textContent = "Son beslenme: " + timeAgo(animal.lastFed);
-    lastFedEl.style.color = "var(--primary-color)";
+  
+  if (animal.type === 'station') {
+     statusGrid.style.display = 'none';
+     document.getElementById('m-traits').style.display = 'none';
+     feedBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Suyu/Mamayı Tazeledim';
+     feedBtn.style.backgroundColor = '#3b82f6';
+     if (animal.lastFed) {
+       lastFedEl.textContent = "Son Yenilenme: " + timeAgo(animal.lastFed);
+       lastFedEl.style.color = "var(--primary-color)";
+     } else {
+       lastFedEl.textContent = "Son Yenilenme: Henüz veri yok";
+       lastFedEl.style.color = "var(--text-light)";
+     }
   } else {
-    lastFedEl.textContent = "Son beslenme: Henüz veri yok";
-    lastFedEl.style.color = "var(--text-light)";
+     statusGrid.style.display = 'grid';
+     document.getElementById('m-traits').style.display = 'flex';
+     feedBtn.innerHTML = '<i class="fa-solid fa-bone"></i> Bugün Mama Verdim';
+     feedBtn.style.backgroundColor = '#f59e0b';
+     if (animal.lastFed) {
+       lastFedEl.textContent = "Son beslenme: " + timeAgo(animal.lastFed);
+       lastFedEl.style.color = "var(--primary-color)";
+     } else {
+       lastFedEl.textContent = "Son beslenme: Henüz veri yok";
+       lastFedEl.style.color = "var(--text-light)";
+     }
   }
 
   document.getElementById('m-age').textContent = animal.age || 'Bilinmiyor';
