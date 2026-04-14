@@ -413,7 +413,6 @@ function setupEventListeners() {
     editingAnimalId = null;
     document.querySelector('#add-modal h2').innerText = 'Yeni Hayvan Ekle';
     document.getElementById('a-image-help').innerText = 'Bilgisayardan/Telefondan resim seçin. (Zorunlu)';
-    document.getElementById('a-image-file').required = true;
     document.getElementById('delete-animal-btn').style.display = 'none'; // Ekleme yaparken gizle
     addForm.reset();
     
