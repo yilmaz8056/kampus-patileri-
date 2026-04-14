@@ -1,9 +1,10 @@
-const CACHE_NAME = 'kampus-kedileri-v6.1';
+const CACHE_NAME = 'kampus-kedileri-v6.2';
 const urlsToCache = [
   './index.html',
   './style.css',
   './main.js',
-  './manifest.json'
+  './manifest.json',
+  './icon-logo.png'
 ];
 
 self.addEventListener('install', event => {
